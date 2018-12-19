@@ -6,9 +6,19 @@ ControlThread::ControlThread()
     bStop = false;
 }
 
+ControlThread::ControlThread(const std::string& path)
+{
+    if(!path.empty() && path != m_Path){
+        m_Path = path;
+    }
+    bStart = false;
+    bStop = false;
+}
+
 ControlThread::~ControlThread()
 {
     if(m_Thread.joinable())m_Thread.join();
+    fswatcher_destroy(m_Watcher);
 }
 
 void ControlThread::threadMain()
@@ -22,9 +32,25 @@ void ControlThread::threadMain()
         while(bStart && !bStop){
             // do something ...
             std::this_thread::sleep_for(std::chrono::milliseconds(500));
-            std::cout << "Working..." << std::endl;
+            std::cout << "Working...path =" << m_Path << std::endl;
+            fswatcher_poll( m_Watcher, &m_Handler, 0x0 );
         }
     }
+}
+
+void ControlThread::setWatcher(fswatcher_t watcher)
+{
+    m_Watcher = std::move(watcher);
+}
+
+void ControlThread::setHandler(fswatcher_event_handler handler)
+{
+    m_Handler = std::move(handler);
+}
+
+void ControlThread::setPath(const std::string& path)
+{
+    m_Path = path;
 }
 
 bool ControlThread::initThread()

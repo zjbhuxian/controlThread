@@ -13,20 +13,28 @@
 #include <thread>
 #include <mutex>
 #include <condition_variable>
+#include "fswatcher.h"
 
 class ControlThread
 {
 public:
     ControlThread();
+    ControlThread(const std::string& path);
     ~ControlThread();
+    void setPath(const std::string& path);
     void threadMain();
     bool initThread();
     void start();
     void pause();
     void resume();
     void stop();
+    void setWatcher(fswatcher_t watcher);
+    void setHandler(fswatcher_event_handler handler);
 
 private:
+    fswatcher_t m_Watcher;
+    fswatcher_event_handler m_Handler;
+    std::string m_Path;
     std::mutex m_Mutex;
     std::condition_variable m_Cv;
     bool bInitialized;
